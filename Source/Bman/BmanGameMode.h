@@ -15,6 +15,32 @@ public:
 	ABmanGameMode();
 
 	virtual void BeginPlay() override;
+	virtual void PreInitializeComponents() override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman, meta = (ClampMin = "5", UIMin = "5"))
+	int32 NumTilesX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman, meta = (ClampMin = "5", UIMin = "5"))
+	int32 NumTilesY;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman, meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float TileSize;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman, meta = (ClampMin = "0.0", ClampMax = "100.0", UIMin = "0.0", UIMax = "100.0"))
+	float DestroyableSpawnChance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman)
+	TSubclassOf<AActor> FloorTile;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman)
+	TSubclassOf<AActor> WallTile;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman)
+	TSubclassOf<AActor> DestroyableTile;
+
+private:
+	void GenerateLevel();
 };
 
 
