@@ -1,112 +1,72 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "BmanPlayerController.h"
-#include "AI/Navigation/NavigationSystem.h"
-#include "Runtime/Engine/Classes/Components/DecalComponent.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
 #include "BmanCharacter.h"
+#include "Kismet/GameplayStatics.h"
+
+// Input actions
+namespace {
+	const FString DROP_BOMB_ACTION = "DropBomb";
+	const FString MOVE_FORWARD_ACTION = "MoveForward";
+	const FString MOVE_RIGHT_ACTION = "MoveRight";
+	const FString ACTION_FORMAT_STRING = TEXT("P{0}_{1}");
+}
 
 ABmanPlayerController::ABmanPlayerController()
 {
-	bShowMouseCursor = true;
-	DefaultMouseCursor = EMouseCursor::Crosshairs;
 }
 
 void ABmanPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor)
+	auto pawn = static_cast<ABmanCharacter*>(GetPawn());
+	if (pawn)
 	{
-		MoveToMouseCursor();
+		pawn->AddMovementInput(moveDir);
+		pawn->ApplyColorByPlayerID(UGameplayStatics::GetPlayerControllerID(this));
 	}
+
+	moveDir = FVector::ZeroVector;
 }
 
 void ABmanPlayerController::SetupInputComponent()
 {
-	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ABmanPlayerController::OnSetDestinationPressed);
-	InputComponent->BindAction("SetDestination", IE_Released, this, &ABmanPlayerController::OnSetDestinationReleased);
+	// build input binding names for player by controller id
+	int32 controllerId = UGameplayStatics::GetPlayerControllerID(this);
+	FName dropBombAction(*FString::Format(*ACTION_FORMAT_STRING, { controllerId, DROP_BOMB_ACTION }));
+	FName moveForwardAction(*FString::Format(*ACTION_FORMAT_STRING, { controllerId, MOVE_FORWARD_ACTION }));
+	FName moveRightAction(*FString::Format(*ACTION_FORMAT_STRING, { controllerId, MOVE_RIGHT_ACTION }));
 
-	// support touch devices 
-	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ABmanPlayerController::MoveToTouchLocation);
-	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ABmanPlayerController::MoveToTouchLocation);
+	// bind input actions
+	InputComponent->BindAction(dropBombAction, EInputEvent::IE_Pressed, this, &ABmanPlayerController::OnDropBomb);
 
-	InputComponent->BindAction("ResetVR", IE_Pressed, this, &ABmanPlayerController::OnResetVR);
+	// bind input axis
+	InputComponent->BindAxis(moveForwardAction, this, &ABmanPlayerController::OnMoveForward);
+	InputComponent->BindAxis(moveRightAction, this, &ABmanPlayerController::OnMoveRight);
 }
 
-void ABmanPlayerController::OnResetVR()
+void ABmanPlayerController::OnDropBomb()
 {
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+
 }
 
-void ABmanPlayerController::MoveToMouseCursor()
+void ABmanPlayerController::OnMoveForward(float val)
 {
-	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
-	{
-		if (ABmanCharacter* MyPawn = Cast<ABmanCharacter>(GetPawn()))
-		{
-			if (MyPawn->GetCursorToWorld())
-			{
-				UNavigationSystem::SimpleMoveToLocation(this, MyPawn->GetCursorToWorld()->GetComponentLocation());
-			}
-		}
-	}
-	else
-	{
-		// Trace to see what is under the mouse cursor
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+	if (FMath::IsNearlyZero(val))
+		return;
 
-		if (Hit.bBlockingHit)
-		{
-			// We hit something, move there
-			SetNewMoveDestination(Hit.ImpactPoint);
-		}
-	}
+	moveDir = FVector::ForwardVector;
+	moveDir *= FMath::IsNegativeFloat(val) ? -1.f : 1.f;
 }
 
-void ABmanPlayerController::MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location)
+void ABmanPlayerController::OnMoveRight(float val)
 {
-	FVector2D ScreenSpaceLocation(Location);
+	if (FMath::IsNearlyZero(val))
+		return;
 
-	// Trace to see what is under the touch location
-	FHitResult HitResult;
-	GetHitResultAtScreenPosition(ScreenSpaceLocation, CurrentClickTraceChannel, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		// We hit something, move there
-		SetNewMoveDestination(HitResult.ImpactPoint);
-	}
-}
-
-void ABmanPlayerController::SetNewMoveDestination(const FVector DestLocation)
-{
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
-		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
-
-		// We need to issue move command only if far enough in order for walk animation to play correctly
-		if (NavSys && (Distance > 120.0f))
-		{
-			NavSys->SimpleMoveToLocation(this, DestLocation);
-		}
-	}
-}
-
-void ABmanPlayerController::OnSetDestinationPressed()
-{
-	// set flag to keep updating destination until released
-	bMoveToMouseCursor = true;
-}
-
-void ABmanPlayerController::OnSetDestinationReleased()
-{
-	// clear flag to indicate we should stop updating the destination
-	bMoveToMouseCursor = false;
+	moveDir = FVector::RightVector;
+	moveDir *= FMath::IsNegativeFloat(val) ? -1.f : 1.f;
 }

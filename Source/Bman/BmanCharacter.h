@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BmanCharacter.generated.h"
 
+class UMaterialInstanceConstant;
+
 UCLASS(Blueprintable)
 class ABmanCharacter : public ACharacter
 {
@@ -14,15 +16,13 @@ class ABmanCharacter : public ACharacter
 public:
 	ABmanCharacter();
 
-	// Called every frame.
-	virtual void Tick(float DeltaSeconds) override;
-
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns CursorToWorld subobject **/
-	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
+
+	// apply a color to the character by player Id
+	void ApplyColorByPlayerID(int32 playerId);
 
 private:
 	/** Top down camera */
@@ -33,8 +33,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	/** A decal that projects to the cursor location. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UDecalComponent* CursorToWorld;
+	TArray<UMaterialInstanceConstant*> bodyMaterials;
 };
 

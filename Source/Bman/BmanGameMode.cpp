@@ -3,6 +3,7 @@
 #include "BmanGameMode.h"
 #include "BmanPlayerController.h"
 #include "BmanCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 
 ABmanGameMode::ABmanGameMode()
@@ -16,4 +17,12 @@ ABmanGameMode::ABmanGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+}
+
+void ABmanGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// create player 2
+	UGameplayStatics::CreatePlayer(GetWorld());
 }
