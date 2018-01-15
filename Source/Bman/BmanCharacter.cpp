@@ -15,6 +15,9 @@ ABmanCharacter::ABmanCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -48,11 +51,5 @@ ABmanCharacter::ABmanCharacter()
 void ABmanCharacter::ApplyColorByPlayerID(int32 playerId)
 {
 	check(bodyMaterials.Num() > playerId);
-
-	auto comps = GetComponentsByClass(USkeletalMeshComponent::StaticClass());
-	for (auto comp : comps)
-	{
-		auto skelMeshComp = static_cast<USkeletalMeshComponent*>(comp);
-		skelMeshComp->SetMaterial(0, bodyMaterials[playerId]);
-	}
+	GetMesh()->SetMaterial(0, bodyMaterials[playerId]);
 }

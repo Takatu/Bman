@@ -54,11 +54,15 @@ void ABmanGameMode::GenerateLevel()
 	{
 		for (int32 y = 0; y < NumTilesY; ++y)
 		{
+			// spawn floor only inside the "arena"
 			if ((x > 0 && x < NumTilesX - 1) && (y > 0 && y < NumTilesY - 1) && (x % 2 == 1 || y % 2 == 1))
 			{
 				world->SpawnActor<AActor>(FloorTile, tform);
+
+				// keep spawn area clean from destroyables
 				if ((x > 2 || y > 2) && (x + 3 < NumTilesX || y + 3 < NumTilesY))
 				{
+					// random chance to spawn destroyables
 					int32 randVal = FMath::RandRange(0, 100);
 					if (randVal <= DestroyableSpawnChance)
 						world->SpawnActor<AActor>(DestroyableTile, tform);

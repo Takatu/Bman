@@ -17,6 +17,7 @@ public:
 protected:
 
 	// Begin PlayerController interface
+	virtual void SetPawn(APawn* pawn) override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
@@ -26,6 +27,9 @@ protected:
 	void OnMoveForward(float val);
 	void OnMoveRight(float val);
 
+	// Bomb actor destoyed callback
+	UFUNCTION()
+	void OnBombDestroyed(AActor* destroyedActor);
 private:
 	FVector moveDir;
 };

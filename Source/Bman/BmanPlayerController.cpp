@@ -2,7 +2,11 @@
 
 #include "BmanPlayerController.h"
 #include "BmanCharacter.h"
+#include "BmanGameMode.h"
+#include "BmanPlayerState.h"
+#include "BmanHelper.h"
 #include "Kismet/GameplayStatics.h"
+
 
 // Input actions
 namespace {
@@ -16,15 +20,23 @@ ABmanPlayerController::ABmanPlayerController()
 {
 }
 
+void ABmanPlayerController::SetPawn(APawn* pawn)
+{
+	Super::SetPawn(pawn);
+
+	auto bmanChar = Cast<ABmanCharacter>(pawn);
+	if (bmanChar)
+		bmanChar->ApplyColorByPlayerID(UGameplayStatics::GetPlayerControllerID(this));
+}
+
 void ABmanPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	auto pawn = static_cast<ABmanCharacter*>(GetPawn());
+	auto pawn = Cast<ABmanCharacter>(GetPawn());
 	if (pawn)
 	{
 		pawn->AddMovementInput(moveDir);
-		pawn->ApplyColorByPlayerID(UGameplayStatics::GetPlayerControllerID(this));
 	}
 
 	moveDir = FVector::ZeroVector;
@@ -49,8 +61,31 @@ void ABmanPlayerController::SetupInputComponent()
 }
 
 void ABmanPlayerController::OnDropBomb()
-{
+{	
+	auto playerState = Cast<ABmanPlayerState>(GetPawn()->PlayerState);
+	if (!playerState)
+		return;
+	
+	if (playerState->MaxBombCount > playerState->BombCount)
+	{
+		float tileSize = BmanHelper::GetTileSize(GetWorld());
 
+		// increase bomp count
+		playerState->BombCount++;
+		FTransform tform = GetPawn()->GetActorTransform();
+		FVector translation = tform.GetTranslation();
+		
+		// Snap to grid
+		translation.X = FMath::RoundToFloat(translation.X / tileSize) * tileSize;
+		translation.Y = FMath::RoundToFloat(translation.Y / tileSize) * tileSize;
+		translation.Z = 0.0f; // FIXME find ground level by raycast
+		tform.SetTranslation(translation);
+
+		auto bomb = GetWorld()->SpawnActor<AActor>(playerState->BombClass, tform);
+
+		// register bomb destroyed callback
+		bomb->OnDestroyed.AddDynamic(this, &ABmanPlayerController::OnBombDestroyed);
+	}
 }
 
 void ABmanPlayerController::OnMoveForward(float val)
@@ -69,4 +104,11 @@ void ABmanPlayerController::OnMoveRight(float val)
 
 	moveDir = FVector::RightVector;
 	moveDir *= FMath::IsNegativeFloat(val) ? -1.f : 1.f;
+}
+
+void ABmanPlayerController::OnBombDestroyed(AActor* destroyedActor)
+{
+	auto playerState = Cast<ABmanPlayerState>(GetPawn()->PlayerState);
+	if (playerState)
+		playerState->BombCount--;
 }
