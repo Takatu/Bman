@@ -18,7 +18,6 @@ ABmanCharacter::ABmanCharacter()
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
