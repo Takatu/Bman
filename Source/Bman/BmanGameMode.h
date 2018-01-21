@@ -39,8 +39,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bman)
 	TSubclassOf<AActor> DestroyableTile;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
+	int32 RoundTime; // TODO: move to GameState
+
 private:
+	FTimerHandle roundTimerHandle;
+
 	void GenerateLevel();
+	void OnRoundTimer();
+
+	void EndRound();
 };
 
 

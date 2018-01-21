@@ -5,6 +5,7 @@
 #include "BmanCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 
 ABmanGameMode::ABmanGameMode()
@@ -12,6 +13,7 @@ ABmanGameMode::ABmanGameMode()
 	, NumTilesY(7)
 	, TileSize(100.0f)
 	, DestroyableSpawnChance(20)
+	, RoundTime(60)
 {
 	// use our custom PlayerController class
 	PlayerControllerClass = ABmanPlayerController::StaticClass();
@@ -27,6 +29,8 @@ ABmanGameMode::ABmanGameMode()
 void ABmanGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetWorldTimerManager().SetTimer(roundTimerHandle, this, &ABmanGameMode::OnRoundTimer, 1.0f, true);
 
 	// create player 2
 	UGameplayStatics::CreatePlayer(GetWorld());
@@ -92,4 +96,17 @@ void ABmanGameMode::GenerateLevel()
 
 	tform.SetTranslation(heightOffset + ((offsetVectorY * (NumTilesY - 2)) + (offsetVectorX * (NumTilesX - 2))));
 	world->SpawnActor<AActor>(APlayerStart::StaticClass(), tform);
+}
+
+void ABmanGameMode::OnRoundTimer()
+{
+	RoundTime--;
+
+	if (RoundTime < 0)
+		EndRound();
+}
+
+void ABmanGameMode::EndRound()
+{
+	// end round
 }
