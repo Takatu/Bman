@@ -8,6 +8,8 @@
 
 /**
  * 
+ ULocalMPViewportClient distributes the input to all players
+ Source: https://wiki.unrealengine.com/Local_Multiplayer_Tips
  */
 UCLASS()
 class BMAN_API ULocalMPViewportClient : public UGameViewportClient
