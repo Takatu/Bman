@@ -18,14 +18,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 	void Explode();
 
+	// take any damage callback
 	UFUNCTION()
 	void OnTakeAnyDamge(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
-	int32 ExplosionRange;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
 	float TimeToLive;
@@ -34,6 +31,7 @@ protected:
 	TSubclassOf<AActor> ExplosionClass;
 
 private:
+	// spawn explosion actors to deal damage
 	void SpawnExplosions(const FVector& dir);
 
 	FTimerHandle explosionTimer;

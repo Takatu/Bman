@@ -7,6 +7,7 @@ ULocalMPViewportClient::ULocalMPViewportClient()
 
 }
 
+// send input key events to all controllers
 bool ULocalMPViewportClient::InputKey(FViewport* Viewport, int32 ControllerId, FKey Key, EInputEvent EventType, float AmountDepressed, bool bGamepad)
 {
 	if (IgnoreInput() || bGamepad || Key.IsMouseButton())

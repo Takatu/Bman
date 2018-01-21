@@ -8,6 +8,7 @@
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 
+
 ABmanGameMode::ABmanGameMode()
 	: NumTilesX(7)
 	, NumTilesY(7)
@@ -33,7 +34,17 @@ void ABmanGameMode::BeginPlay()
 	GetWorldTimerManager().SetTimer(roundTimerHandle, this, &ABmanGameMode::OnRoundTimer, 1.0f, true);
 
 	// create player 2
-	UGameplayStatics::CreatePlayer(GetWorld());
+	UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+
+	// receive damage events to end the round
+	TArray<AActor*> pawns;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), DefaultPawnClass, pawns);
+	for (auto pawn : pawns)
+	{
+		pawn->OnTakeAnyDamage.AddDynamic(this, &ABmanGameMode::OnTakeAnyDamge);
+	}
+
+	DamagedPlayers.Empty();
 }
 
 void ABmanGameMode::PreInitializeComponents()
@@ -100,13 +111,21 @@ void ABmanGameMode::GenerateLevel()
 
 void ABmanGameMode::OnRoundTimer()
 {
+	// decrease round time by a second
 	RoundTime--;
 
+	// end round after time is up
 	if (RoundTime < 0)
 		EndRound();
 }
 
-void ABmanGameMode::EndRound()
+void ABmanGameMode::OnTakeAnyDamge(AActor* DamagedActor, float Damage, const UDamageType * DamageType, AController * InstigatedBy, AActor * DamageCauser)
 {
-	// end round
+	if (DamagedPlayers.Num() == 0)
+	{
+		// delay EndRound call by one tick to handle all damge before evaluating the win condition
+		GetWorldTimerManager().SetTimerForNextTick(this, &ABmanGameMode::EndRound);
+	}
+
+	DamagedPlayers.AddUnique(DamagedActor);
 }

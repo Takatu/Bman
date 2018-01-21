@@ -8,7 +8,8 @@
 #include "BmanPlayerState.generated.h"
 
 /**
- * 
+ *
+ ABmanPlayerState keeps player related data
  */
 UCLASS()
 class BMAN_API ABmanPlayerState : public APlayerState
@@ -19,9 +20,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
 	TSubclassOf<AActor> BombClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Bman)
 	int32 BombCount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
 	int32 MaxBombCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bman)
+	int32 BombExposionRange;
 };

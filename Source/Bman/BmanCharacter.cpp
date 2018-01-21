@@ -1,13 +1,9 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "BmanCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/PlayerController.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -15,9 +11,6 @@ ABmanCharacter::ABmanCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -35,7 +28,7 @@ ABmanCharacter::ABmanCharacter()
 	bodyMaterials.Add(ConstructorHelpers::FObjectFinderOptional<UMaterialInstanceConstant>(TEXT("MaterialInstanceConstant'/Game/Materials/MI_Player1Body'")).Get());
 }
 
-void ABmanCharacter::ApplyColorByPlayerID(int32 playerId)
+void ABmanCharacter::ApplyColor(int32 playerId)
 {
 	check(bodyMaterials.Num() > playerId);
 	GetMesh()->SetMaterial(0, bodyMaterials[playerId]);

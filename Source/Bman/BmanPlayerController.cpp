@@ -2,7 +2,6 @@
 
 #include "BmanPlayerController.h"
 #include "BmanCharacter.h"
-#include "BmanGameMode.h"
 #include "BmanPlayerState.h"
 #include "BmanHelper.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,10 +22,11 @@ ABmanPlayerController::ABmanPlayerController()
 void ABmanPlayerController::SetPawn(APawn* pawn)
 {
 	Super::SetPawn(pawn);
-
+	
+	// apply color to the player character by its controller id
 	auto bmanChar = Cast<ABmanCharacter>(pawn);
 	if (bmanChar)
-		bmanChar->ApplyColorByPlayerID(UGameplayStatics::GetPlayerControllerID(this));
+		bmanChar->ApplyColor(UGameplayStatics::GetPlayerControllerID(this));
 }
 
 void ABmanPlayerController::PlayerTick(float DeltaTime)
@@ -81,7 +81,10 @@ void ABmanPlayerController::OnDropBomb()
 		translation.Z = 0.0f; // FIXME find ground level by raycast
 		tform.SetTranslation(translation);
 
-		auto bomb = GetWorld()->SpawnActor<AActor>(playerState->BombClass, tform);
+		// spawn bomb actor
+		FActorSpawnParameters params;
+		params.Instigator = this->GetPawn();
+		auto bomb = GetWorld()->SpawnActor<AActor>(playerState->BombClass, tform, params);
 
 		// register bomb destroyed callback
 		bomb->OnDestroyed.AddDynamic(this, &ABmanPlayerController::OnBombDestroyed);

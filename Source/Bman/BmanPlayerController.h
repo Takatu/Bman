@@ -6,6 +6,10 @@
 #include "GameFramework/PlayerController.h"
 #include "BmanPlayerController.generated.h"
 
+/**
+*
+ABmanPlayerController controlls the player pawn 
+*/
 UCLASS()
 class ABmanPlayerController : public APlayerController
 {
